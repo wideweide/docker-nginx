@@ -2,6 +2,10 @@ FROM ubuntu:16.04
 
 LABEL maintainer="liudanking@gmail.com"
 
+# use proxy to speed up download
+ENV http_proxy='http://192.168.101.12:6152'
+ENV https_proxy='http://192.168.101.12:6152'
+
 RUN apt-get update
 
 # dependency
@@ -21,19 +25,28 @@ RUN set -x \
 	&& cd ngx_brotli \
 	&& git submodule update --init
 
-# openssl 1.3
+# openssl with TLSv1.3
 RUN set -x \
-	# git clone -b master --single-branch https://github.com/openssl/openssl.git openssl 
-	&& git clone -b tls1.3-draft-18 --single-branch https://github.com/openssl/openssl.git openssl
+	&& git clone -b 'OpenSSL_1_1_1-stable' --single-branch --depth 1 https://github.com/openssl/openssl.git openssl
+
 
 # build and install nginx
 RUN set -x \
-	&& wget -c https://nginx.org/download/nginx-1.13.9.tar.gz \
-	&& tar zxf nginx-1.13.9.tar.gz \
-	&& cd nginx-1.13.9 \
-	&& ./configure --add-module=../ngx_brotli --add-module=../nginx-ct-1.3.2 --with-openssl=../openssl --with-openssl-opt='enable-tls1_3 enable-weak-ssl-ciphers' --with-http_v2_module --with-http_ssl_module --with-http_gzip_static_module \
+	&& wget -c https://nginx.org/download/nginx-1.15.5.tar.gz \
+	&& tar zxf nginx-1.15.5.tar.gz \
+	&& cd nginx-1.15.5 && ls ../ \
+	&& ./configure \
+		--add-module=../ngx_brotli \
+		--add-module=../nginx-ct-1.3.2 \
+		--with-openssl=../openssl \
+		--with-http_v2_module \
+		--with-http_ssl_module \
+		--with-http_gzip_static_module \
 	&& make \
-	&& make install 
+	&& make install
+
+ENV http_proxy=''
+ENV https_proxy=''
 
 CMD ["/usr/local/nginx/sbin/nginx", "-g", "daemon off;"]
 
