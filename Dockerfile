@@ -3,8 +3,8 @@ FROM ubuntu:16.04
 LABEL maintainer="liudanking@gmail.com"
 
 # use proxy to speed up download
-ENV http_proxy='http://192.168.101.12:6152'
-ENV https_proxy='http://192.168.101.12:6152'
+# ENV http_proxy='http://192.168.101.12:6152'
+# ENV https_proxy='http://192.168.101.12:6152'
 
 RUN apt-get update
 
@@ -32,9 +32,9 @@ RUN set -x \
 
 # build and install nginx
 RUN set -x \
-	&& wget -c https://nginx.org/download/nginx-1.15.5.tar.gz \
-	&& tar zxf nginx-1.15.5.tar.gz \
-	&& cd nginx-1.15.5 && ls ../ \
+	&& wget -c https://nginx.org/download/nginx-1.17.6.tar.gz \
+	&& tar zxf nginx-1.17.6.tar.gz \
+	&& cd nginx-1.17.6 && ls ../ \
 	&& ./configure \
 		--add-module=../ngx_brotli \
 		--add-module=../nginx-ct-1.3.2 \
@@ -45,8 +45,8 @@ RUN set -x \
 	&& make \
 	&& make install
 
-ENV http_proxy=''
-ENV https_proxy=''
+# ENV http_proxy=''
+# ENV https_proxy=''
 
 CMD ["/usr/local/nginx/sbin/nginx", "-g", "daemon off;"]
 
